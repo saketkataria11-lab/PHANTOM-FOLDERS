@@ -1,3 +1,4 @@
+<img width="2752" height="1536" alt="phantom folders" src="https://github.com/user-attachments/assets/db30cdc9-c4fb-4b97-a2cc-35c938664cf7" />
 # Phantom Folders
 
 **Military-grade encrypted file vault with zero-knowledge architecture, plausible deniability, and a futuristic JARVIS-style interface.**
