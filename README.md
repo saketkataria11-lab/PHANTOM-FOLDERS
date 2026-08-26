@@ -27,16 +27,23 @@ Phantom Folders is a self-hosted encrypted file explorer that stores your files 
 
 ## 🚀 Quick Start
 
+### 🪟 Windows Instant Ghost Launch
+You can launch Phantom Folders anytime instantly with zero console windows:
+1. Press **`Win + R`** on your keyboard.
+2. Type **`phantom`** and press **Enter**.
+
+---
+
 ### Prerequisites
 - **Python 3.10+** (required)
 - **Node.js 18+** (only if you want to rebuild the frontend — a pre-built bundle is included)
 
-### Installation
+### Installation & Launch
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/PhantomFolders.git
-cd PhantomFolders
+git clone https://github.com/saketkataria11-lab/PHANTOM-FOLDERS.git
+cd PHANTOM-FOLDERS
 
 # Install Python dependencies
 pip install -r requirements.txt
@@ -59,19 +66,24 @@ docker compose up -d
 
 ## 💻 Usage Modes
 
-### 1. Desktop App Mode (Default)
+### 1. Instant Ghost Mode (Windows Hotkey)
+* Press **`Win + R`** → type **`phantom`** → press **Enter**.
+* Silently opens the frameless encrypted desktop explorer with zero background terminal popups.
+
+### 2. Desktop App Mode (Cross-Platform)
 ```bash
 python main.py
 ```
-Opens a frameless native desktop window with the JARVIS-style encrypted file explorer.
+Opens a frameless native desktop window on Windows, macOS, or Linux.
+*(Or double-click `launch.bat` on Windows / run `./launch.sh` on Linux/macOS).*
 
-### 2. Web Server Mode (Self-Hosted / Remote Access)
+### 3. Web Server Mode (Self-Hosted / Remote Access)
 ```bash
 python main.py --server --host 0.0.0.0 --port 8000
 ```
-Runs as a headless web server. Access from any device on your network at `http://<your-ip>:8000`.
+Runs as a headless web server. Access from any phone, laptop, or browser on your network at `http://<your-ip>:8000`.
 
-### 3. Docker Container Mode
+### 4. Docker Container Mode
 ```bash
 docker compose up -d
 ```
