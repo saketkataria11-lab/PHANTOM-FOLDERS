@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phantom-folders"
+version = "1.0.0"
+description = "Military-grade encrypted file vault with zero-knowledge architecture, plausible deniability, and 2.0 TB storage system."
+readme = "README.md"
+authors = [{ name = "Phantom Folders Team" }]
+license = { text = "MIT" }
+requires-python = ">=3.10"
+keywords = ["encryption", "security", "vault", "file-explorer", "aes-256-gcm", "scrypt", "zero-knowledge", "privacy"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security :: Cryptography",
+    "Topic :: System :: Filesystems",
+]
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
+    "pycryptodome>=3.19.0",
+    "pydantic>=2.5.0",
+    "python-multipart>=0.0.6",
+]
+
+[project.optional-dependencies]
+desktop = [
+    "pywebview>=4.4.0",
+]
+
+[project.scripts]
+phantom = "main:main"
+
+[project.urls]
+"Homepage" = "https://github.com/YOUR_USERNAME/PhantomFolders"
+"Bug Tracker" = "https://github.com/YOUR_USERNAME/PhantomFolders/issues"

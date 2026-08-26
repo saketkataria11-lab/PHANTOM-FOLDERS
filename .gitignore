@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist-info/
+.eggs/
+*.whl
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Node.js
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Phantom Folders data (never commit encrypted vaults)
+.phantom_vault/
+.vaults/
+*.dat
+*.vault
+
+# Build caches
+.cache/
+.parcel-cache/
+
+# Logs
+*.log

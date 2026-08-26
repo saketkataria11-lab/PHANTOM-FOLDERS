@@ -1,0 +1,6 @@
+fastapi>=0.104.0
+uvicorn>=0.24.0
+pycryptodome>=3.19.0
+pydantic>=2.5.0
+python-multipart>=0.0.6
+pywebview>=4.4.0;platform_system!="Linux" or extra=="desktop"

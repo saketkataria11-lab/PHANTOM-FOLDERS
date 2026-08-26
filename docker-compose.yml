@@ -1,0 +1,17 @@
+services:
+  phantom-vault:
+    build: .
+    container_name: phantom-folders
+    ports:
+      - "8000:8000"
+    volumes:
+      - phantom_data:/data/phantom_vault
+    environment:
+      - PHANTOM_STORAGE_DIR=/data/phantom_vault
+      - PHANTOM_HOST=0.0.0.0
+      - PHANTOM_PORT=8000
+    restart: unless-stopped
+
+volumes:
+  phantom_data:
+    driver: local
