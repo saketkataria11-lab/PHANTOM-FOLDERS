@@ -1,7 +1,7 @@
 """
 Phantom Folders — Application Entry Point
 Supports two modes:
-  1. Desktop Mode (default): Opens a native frameless PyWebView window.
+  1. Desktop Mode (default): Opens a native PyWebView window with auto-fallback to default browser.
   2. Server Mode (--server): Runs as a headless web server accessible from any browser.
 
 Usage:
@@ -13,6 +13,13 @@ Usage:
 
 import os
 import sys
+
+# Prevent pythonw.exe from crashing on print statements when detached
+if sys.stdout is None:
+    sys.stdout = open(os.devnull, 'w', encoding='utf-8')
+if sys.stderr is None:
+    sys.stderr = open(os.devnull, 'w', encoding='utf-8')
+
 import time
 import argparse
 import threading
@@ -43,47 +50,55 @@ def wait_for_server(url: str, max_retries: int = 30) -> bool:
 
 
 def run_desktop(host: str, port: int):
-    """Launch the native desktop window using PyWebView."""
-    try:
-        import webview
-    except ImportError:
-        print("[ERROR] PyWebView is not installed. Install it with: pip install pywebview")
-        print("[INFO]  Falling back to server mode. Open your browser to:")
-        print(f"        http://{host}:{port}")
-        run_backend(host, port)
-        return
-
+    """Launch the native desktop window with automatic browser fallback."""
     # Start backend in background thread
     backend_thread = threading.Thread(target=run_backend, args=(host, port), daemon=True)
     backend_thread.start()
     wait_for_server(f"http://{host}:{port}/api/ping")
 
-    class WindowApi:
-        def minimize(self):
-            if len(webview.windows) > 0:
-                webview.windows[0].minimize()
+    launched_gui = False
+    try:
+        import webview
 
-        def maximize(self):
-            if len(webview.windows) > 0:
-                webview.windows[0].toggle_fullscreen()
+        class WindowApi:
+            def minimize(self):
+                if len(webview.windows) > 0:
+                    webview.windows[0].minimize()
 
-        def close(self):
-            if len(webview.windows) > 0:
-                webview.windows[0].destroy()
+            def maximize(self):
+                if len(webview.windows) > 0:
+                    webview.windows[0].toggle_fullscreen()
 
-    api = WindowApi()
-    window = webview.create_window(
-        'PHANTOM FOLDERS — Encrypted File Explorer',
-        f'http://{host}:{port}',
-        width=1280,
-        height=800,
-        frameless=True,
-        transparent=False,
-        easy_drag=True,
-        js_api=api
-    )
+            def close(self):
+                if len(webview.windows) > 0:
+                    webview.windows[0].destroy()
 
-    webview.start(debug=False)
+        api = WindowApi()
+        window = webview.create_window(
+            'PHANTOM FOLDERS — Encrypted File Explorer',
+            f'http://{host}:{port}',
+            width=1280,
+            height=800,
+            frameless=False,
+            easy_drag=False,
+            js_api=api
+        )
+
+        webview.start(debug=False)
+        launched_gui = True
+    except Exception:
+        launched_gui = False
+
+    # If PyWebView GUI was not launched or failed, open default browser and keep server alive
+    if not launched_gui:
+        import webbrowser
+        webbrowser.open(f"http://{host}:{port}")
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            pass
+
     os._exit(0)
 
 
