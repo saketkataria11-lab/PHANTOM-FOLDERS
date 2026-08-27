@@ -1,26 +1,24 @@
 """
-Phantom Folders — Application Entry Point
-Supports two modes:
-  1. Desktop Mode (default): Opens a native PyWebView window with auto-fallback to default browser.
-  2. Server Mode (--server): Runs as a headless web server accessible from any browser.
-
-Usage:
-  python main.py                          # Desktop app mode
-  python main.py --server                 # Web server on 127.0.0.1:8001
-  python main.py --server --host 0.0.0.0  # Web server on all interfaces
-  python main.py --server --port 8000     # Web server on custom port
+Phantom Folders — Application Entry Point & Resilient Launcher
+Features:
+- Dynamic Free Port Allocation (Prevents Port Conflict & 'Can't Reach Page' Errors)
+- Synchronous Backend Readiness Handshake
+- Native PyWebView Desktop Window with Zero Console Popup
+- Automatic Browser Fallback if WebView2 is Unavailable
+- Headless Web Server Mode (--server)
 """
 
 import os
 import sys
 
-# Prevent pythonw.exe from crashing on print statements when detached
+# Prevent pythonw.exe from crashing on print statements when running detached in background
 if sys.stdout is None:
     sys.stdout = open(os.devnull, 'w', encoding='utf-8')
 if sys.stderr is None:
     sys.stderr = open(os.devnull, 'w', encoding='utf-8')
 
 import time
+import socket
 import argparse
 import threading
 import urllib.request
@@ -33,28 +31,46 @@ import uvicorn
 from backend.server import app
 
 
-def run_backend(host: str = "127.0.0.1", port: int = 8001):
-    """Run the FastAPI server."""
-    uvicorn.run(app, host=host, port=port, log_level="error")
+def find_available_port(host: str = "127.0.0.1", start_port: int = 8001, max_attempts: int = 50) -> int:
+    """Find a free TCP port to prevent bind conflicts."""
+    for port in range(start_port, start_port + max_attempts):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind((host, port))
+                return port
+            except OSError:
+                continue
+    return start_port
 
 
-def wait_for_server(url: str, max_retries: int = 30) -> bool:
-    """Poll URL until server responds."""
+def wait_for_server(url: str, max_retries: int = 60, delay: float = 0.1) -> bool:
+    """Poll URL until backend server responds 200 OK."""
     for _ in range(max_retries):
         try:
-            urllib.request.urlopen(url, timeout=0.5)
-            return True
-        except (urllib.error.URLError, ConnectionResetError, OSError):
-            time.sleep(0.2)
+            req = urllib.request.Request(url, headers={'User-Agent': 'PhantomLauncher/1.0'})
+            with urllib.request.urlopen(req, timeout=0.5) as resp:
+                if resp.status == 200:
+                    return True
+        except Exception:
+            time.sleep(delay)
     return False
 
 
 def run_desktop(host: str, port: int):
-    """Launch the native desktop window with automatic browser fallback."""
-    # Start backend in background thread
-    backend_thread = threading.Thread(target=run_backend, args=(host, port), daemon=True)
-    backend_thread.start()
-    wait_for_server(f"http://{host}:{port}/api/ping")
+    """Launch the native desktop window with dynamic port discovery and auto-fallback."""
+    allocated_port = find_available_port(host, port)
+    target_url = f"http://{host}:{allocated_port}"
+
+    # Start uvicorn server in a background thread
+    config = uvicorn.Config(app, host=host, port=allocated_port, log_level="error")
+    server = uvicorn.Server(config)
+    server_thread = threading.Thread(target=server.run, daemon=True)
+    server_thread.start()
+
+    # Guaranteed synchronous handshake before opening window
+    is_ready = wait_for_server(f"{target_url}/api/ping", max_retries=60, delay=0.1)
+    if not is_ready:
+        time.sleep(0.5)
 
     launched_gui = False
     try:
@@ -76,7 +92,7 @@ def run_desktop(host: str, port: int):
         api = WindowApi()
         window = webview.create_window(
             'PHANTOM FOLDERS — Encrypted File Explorer',
-            f'http://{host}:{port}',
+            target_url,
             width=1280,
             height=800,
             frameless=False,
@@ -89,30 +105,34 @@ def run_desktop(host: str, port: int):
     except Exception:
         launched_gui = False
 
-    # If PyWebView GUI was not launched or failed, open default browser and keep server alive
+    # If PyWebView was not available or encountered an issue, open default browser
     if not launched_gui:
         import webbrowser
-        webbrowser.open(f"http://{host}:{port}")
+        webbrowser.open(target_url)
         try:
             while True:
                 time.sleep(1)
         except KeyboardInterrupt:
             pass
 
+    server.should_exit = True
     os._exit(0)
 
 
 def run_server(host: str, port: int):
     """Run as a headless web server."""
+    allocated_port = find_available_port(host, port)
     print("================================================")
     print("   PHANTOM FOLDERS - Encrypted File Vault       ")
     print("   Server Mode                                  ")
     print("================================================")
-    print(f"   URL: http://{host}:{port}")
+    print(f"   URL: http://{host}:{allocated_port}")
     print("================================================")
     print()
     print("Press Ctrl+C to stop the server.")
-    run_backend(host, port)
+    config = uvicorn.Config(app, host=host, port=allocated_port, log_level="info")
+    server = uvicorn.Server(config)
+    server.run()
 
 
 def main():
