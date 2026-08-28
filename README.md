@@ -1,7 +1,7 @@
 <img width="2752" height="1536" alt="phantom folders" src="https://github.com/user-attachments/assets/db30cdc9-c4fb-4b97-a2cc-35c938664cf7" />
 # Phantom Folders
 
-**Military-grade encrypted file vault with zero-knowledge architecture, plausible deniability, and a futuristic JARVIS-style interface.**
+**Military-grade encrypted file vault with zero-knowledge architecture, plausible deniability, and a futuristic interface.**
 
 Phantom Folders is a self-hosted encrypted file explorer that stores your files using AES-256-GCM encryption with Scrypt memory-hard key derivation. No files are stored in plaintext — ever. Runs as a native desktop app or a web server accessible from any browser.
 
