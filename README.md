@@ -104,7 +104,7 @@ PhantomFolders/
 │   ├── web_store.py         # Persistent encrypted object store
 │   ├── vault_manager.py     # Dual-slot cryptographic vault manager
 │   └── server.py            # FastAPI REST API + static file serving
-├── src/                     # React frontend source (JARVIS theme)
+├── src/                     # React frontend source
 │   ├── App.jsx
 │   ├── main.jsx
 │   ├── index.css
